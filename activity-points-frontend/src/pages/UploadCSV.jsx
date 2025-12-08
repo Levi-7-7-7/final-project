@@ -1,34 +1,32 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import tutorAxios from "../api/tutorAxios"; // Use your working tutorAxios
 import { FileUp } from "lucide-react";
 
 const UploadCSV = () => {
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const upload = async () => {
     if (!file) return alert("Select a file first!");
+    setLoading(true);
+    setMessage("");
 
     const formData = new FormData();
     formData.append("file", file);
 
-    const token = localStorage.getItem("tutorToken");
-
     try {
-      const res = await axios.post(
-        `${BASE_URL}/api/tutors/students/upload`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const res = await tutorAxios.post("/tutors/students/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      alert("Upload Successful!");
+      setMessage(res.data.message || "Upload successful!");
+      setFile(null);
     } catch (err) {
-      alert("Upload failed");
+      console.error("CSV upload error:", err.response ?? err);
+      setMessage(err.response?.data?.error || "Upload failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,10 +41,12 @@ const UploadCSV = () => {
           onChange={(e) => setFile(e.target.files[0])}
         />
 
-        <button className="btn" onClick={upload}>
-          <FileUp size={18} /> Upload
+        <button className="btn" onClick={upload} disabled={loading}>
+          <FileUp size={18} /> {loading ? "Uploading..." : "Upload"}
         </button>
       </div>
+
+      {message && <p className="mt-2 text-sm">{message}</p>}
     </div>
   );
 };
