@@ -1,0 +1,398 @@
+.viewcertificates-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc, #dbeafe, #d1fae5);
+  padding: 0 24px 80px;
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #334155;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 48px 0 24px;
+}
+
+.back-button {
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(255 255 255 / 0.8);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+}
+.back-button:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-left: 16px;
+  color: #1e293b;
+}
+
+.summary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 1rem;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: #bfdbfe;
+  color: #1e40af;
+  font-weight: 700;
+  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.student-info h2 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+
+.student-info p {
+  margin: 4px 0 0 0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.points-summary {
+  text-align: right;
+}
+
+.points-summary .points {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.points-summary p {
+  margin: 4px 0 0 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  border-radius: 1rem;
+  border: none;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.25s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+  background-color: #2563eb;
+  color: white;
+}
+
+.filter-count {
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.loading-text,
+.error-text {
+  text-align: center;
+  font-size: 1rem;
+  margin: 20px 0;
+  color: #64748b;
+}
+
+.error-text {
+  color: #dc2626;
+}
+
+.certificates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.certificate-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+.cert-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: #1e293b;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.cert-category-subcat {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.category-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.category-technical {
+  background: #bfdbfe;
+  color: #1e40af;
+}
+
+.category-cultural {
+  background: #ddd6fe;
+  color: #5b21b6;
+}
+
+.category-sports {
+  background: #bbf7d0;
+  color: #15803d;
+}
+
+.category-socialservice {
+  background: #fed7aa;
+  color: #c2410c;
+}
+
+.category-default {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.separator {
+  user-select: none;
+}
+
+.subcategory {
+  font-weight: 500;
+}
+
+.prize-level {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: #78350f;
+  margin-bottom: 12px;
+}
+
+.award-icon {
+  color: #fbbf24;
+}
+
+.status-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 6px 14px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  user-select: none;
+}
+
+.status-approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-pending {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-default {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.cert-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.dates-points > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.award-green {
+  color: #15803d;
+}
+
+.points-text {
+  font-weight: 700;
+  color: #15803d;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-view,
+.btn-download {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  background: white;
+  color: #2563eb;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+  font-size: 0.875rem;
+  user-select: none;
+}
+
+.btn-view:hover {
+  background-color: #dbeafe;
+}
+
+.btn-download {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-download:hover {
+  background-color: #f1f5f9;
+}
+
+.rejected-reason {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-size: 0.875rem;
+}
+
+.no-certificates {
+  text-align: center;
+  padding: 48px 24px;
+  color: #64748b;
+}
+
+.no-cert-icon {
+  margin-bottom: 16px;
+}
+
+.upload-first-btn {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  font-weight: 600;
+  border-radius: 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 12px;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.upload-first-btn:hover {
+  background-color: #1e40af;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #cbd5e1;
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  max-width: 720px;
+  margin: 0 auto;
+  gap: 12px;
+  z-index: 50;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  transition: color 0.25s ease;
+}
+
+.nav-btn svg {
+  stroke-width: 1.5;
+}
+
+.nav-btn.active,
+.nav-btn:hover {
+  color: #2563eb;
+}

@@ -1,0 +1,138 @@
+/* =================== TUTOR DASHBOARD =================== */
+.tutor-dashboard {
+  min-height: 100vh;
+  background: #f3f4f6;
+  box-sizing: border-box;
+}
+
+/* Header */
+.dashboard-header {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+.dashboard-header p {
+  color: #4b5563;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Tutor avatar */
+.tutor-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Logout button */
+.btn-logout {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-logout:hover {
+  background: #b91c1c;
+}
+
+/* Nested content */
+.nested-content {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  min-height: 300px;
+}
+
+/* Loading text */
+.loading-text {
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Bottom nav */
+.tutor-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem 0;
+  box-shadow: 0 -1px 6px rgba(0,0,0,0.05);
+  z-index: 100;
+}
+
+.tutor-bottom-nav .nav-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #64748b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.tutor-bottom-nav .nav-button span {
+  margin-top: 4px;
+}
+
+.tutor-bottom-nav .nav-button.active {
+  color: #2563eb;
+  transform: scale(1.1);
+  font-weight: 700;
+}
+
+/* =================== MOBILE =================== */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-left {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .btn-logout {
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 0.5rem;
+  }
+
+  .nested-content {
+    padding: 0.75rem;
+  }
+}
