@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import tutorAxios from '../api/tutorAxios';
-import '../css/TutorDashboard.css';
+import '../css/PendingCertificates.css'; // new CSS file
 
 const PendingCertificates = () => {
   const [pendingCertificates, setPendingCertificates] = useState([]);
@@ -32,55 +32,40 @@ const PendingCertificates = () => {
   };
 
   if (loading)
-    return <p className="p-4 text-center">Loading pending certificates...</p>;
+    return <p className="pending-loading">Loading pending certificates...</p>;
 
   if (!pendingCertificates.length)
-    return <p className="p-4 text-center">No pending certificates</p>;
+    return <p className="pending-loading">No pending certificates</p>;
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Pending Certificates</h2>
-      <table className="w-full table-auto border">
-        <thead>
-          <tr className="bg-gray-200 text-left">
-            <th className="p-2">Student</th>
-            <th className="p-2">Category</th>
-            <th className="p-2">Subcategory</th>
-            <th className="p-2">Prize Level</th>
-            <th className="p-2">File</th>
-            <th className="p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pendingCertificates.map((cert) => (
-            <tr key={cert._id} className="border">
-              <td className="p-2">{cert.student?.name || 'N/A'}</td>
-              <td className="p-2">{cert.category?.name || 'N/A'}</td>
-              <td className="p-2">{cert.subcategory || 'N/A'}</td>
-              <td className="p-2">{cert.prizeLevel || 'N/A'}</td>
-              <td className="p-2">
-                <a href={cert.fileUrl} target="_blank" rel="noreferrer">
-                  View
-                </a>
-              </td>
-              <td className="p-2 flex gap-2">
-                <button
-                  onClick={() => handleCertificateAction(cert._id, 'approve')}
-                  className="btn-approve"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleCertificateAction(cert._id, 'reject')}
-                  className="btn-reject"
-                >
-                  Reject
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="pending-container">
+      {pendingCertificates.map((cert) => (
+        <div key={cert._id} className="pending-card">
+          <div className="card-left">
+            <h3 className="student-name">{cert.student?.name || 'N/A'}</h3>
+            <p><strong>Category:</strong> {cert.category?.name || 'N/A'}</p>
+            <p><strong>Subcategory:</strong> {cert.subcategory || 'N/A'}</p>
+            <p><strong>Prize Level:</strong> {cert.prizeLevel || 'N/A'}</p>
+            <a href={cert.fileUrl} target="_blank" rel="noreferrer" className="view-link">
+              View Certificate
+            </a>
+          </div>
+          <div className="card-right">
+            <button
+              className="btn-approve"
+              onClick={() => handleCertificateAction(cert._id, 'approve')}
+            >
+              Approve
+            </button>
+            <button
+              className="btn-reject"
+              onClick={() => handleCertificateAction(cert._id, 'reject')}
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

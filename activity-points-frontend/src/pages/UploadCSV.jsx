@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import tutorAxios from "../api/tutorAxios"; // Use your working tutorAxios
+import tutorAxios from "../api/tutorAxios";
 import { FileUp } from "lucide-react";
+import '../css/UploadCSV.css'; // Import the CSS
 
 const UploadCSV = () => {
   const [file, setFile] = useState(null);
@@ -31,22 +32,25 @@ const UploadCSV = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Upload Students CSV</h2>
+    <div className="upload-csv-card">
+      <h2>Upload Students CSV</h2>
 
-      <div className="flex items-center gap-4">
-        <input
-          type="file"
-          accept=".csv"
-          onChange={(e) => setFile(e.target.files[0])}
-        />
+      <div className="upload-section">
+        <label className="file-input-label">
+          {file ? file.name : "Choose CSV file"}
+          <input
+            type="file"
+            accept=".csv"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+        </label>
 
-        <button className="btn" onClick={upload} disabled={loading}>
+        <button className="upload-btn" onClick={upload} disabled={loading}>
           <FileUp size={18} /> {loading ? "Uploading..." : "Upload"}
         </button>
       </div>
 
-      {message && <p className="mt-2 text-sm">{message}</p>}
+      {message && <p className="upload-message">{message}</p>}
     </div>
   );
 };

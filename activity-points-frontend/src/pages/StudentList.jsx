@@ -4,6 +4,7 @@ import { Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import '../css/StudentList.css'; // import CSS
 
 const StudentList = () => {
   const [students, setStudents] = useState([]);
@@ -12,7 +13,6 @@ const StudentList = () => {
   const [branchFilter, setBranchFilter] = useState('');
   const [search, setSearch] = useState('');
 
-  // dynamic dropdown options
   const [batchOptions, setBatchOptions] = useState([]);
   const [branchOptions, setBranchOptions] = useState([]);
 
@@ -20,23 +20,14 @@ const StudentList = () => {
     const fetchStudents = async () => {
       try {
         const res = await tutorAxios.get('/tutors/students');
-
-        // backend returns { success: true, students: [...] }
-        const list = res.data.students;
-
+        const list = res.data.students || [];
         setStudents(list);
-
-        // generate unique batch names
         setBatchOptions([...new Set(list.map((s) => s.batch?.name).filter(Boolean))]);
-
-        // generate unique branch names
         setBranchOptions([...new Set(list.map((s) => s.branch?.name).filter(Boolean))]);
-
       } catch (err) {
         console.error(err);
       }
     };
-
     fetchStudents();
   }, []);
 
@@ -59,7 +50,6 @@ const StudentList = () => {
         TotalPoints: s.totalPoints || 0,
       }))
     );
-
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Students');
     XLSX.writeFile(wb, 'students_list.xlsx');
@@ -67,9 +57,7 @@ const StudentList = () => {
 
   const downloadPDF = () => {
     const doc = new jsPDF();
-
     doc.text('Student List', 14, 16);
-
     autoTable(doc, {
       startY: 22,
       head: [['Name', 'Reg No', 'Batch', 'Branch', 'Email', 'Total Points']],
@@ -82,74 +70,64 @@ const StudentList = () => {
         s.totalPoints || 0,
       ]),
     });
-
     doc.save('students_list.pdf');
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Student List</h2>
+    <div className="student-list-card">
+      <h2>Student List</h2>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-4">
-
+      <div className="filters">
         <input
           type="text"
           placeholder="Search student..."
-          className="input-box"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="input-box"
         />
 
         <select className="select-box" onChange={(e) => setBatchFilter(e.target.value)}>
           <option value="">All Batches</option>
-          {batchOptions.map((b, i) => (
-            <option key={i} value={b}>{b}</option>
-          ))}
+          {batchOptions.map((b, i) => <option key={i} value={b}>{b}</option>)}
         </select>
 
         <select className="select-box" onChange={(e) => setBranchFilter(e.target.value)}>
           <option value="">All Branches</option>
-          {branchOptions.map((b, i) => (
-            <option key={i} value={b}>{b}</option>
-          ))}
+          {branchOptions.map((b, i) => <option key={i} value={b}>{b}</option>)}
         </select>
 
-        <button className="btn" onClick={downloadExcel}>
-          <Download size={18} /> Excel
-        </button>
-
-        <button className="btn" onClick={downloadPDF}>
-          <Download size={18} /> PDF
-        </button>
+        <button className="btn" onClick={downloadExcel}><Download size={18} /> Excel</button>
+        <button className="btn" onClick={downloadPDF}><Download size={18} /> PDF</button>
       </div>
 
       {/* Table */}
-      <table className="w-full table-auto border">
-        <thead>
-          <tr className="bg-gray-200 text-left">
-            <th className="p-2">Name</th>
-            <th className="p-2">Reg No</th>
-            <th className="p-2">Batch</th>
-            <th className="p-2">Branch</th>
-            <th className="p-2">Email</th>
-            <th className="p-2">Total Points</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filtered.map((s, i) => (
-            <tr key={i} className="border">
-              <td className="p-2">{s.name}</td>
-              <td className="p-2">{s.registerNumber}</td>
-              <td className="p-2">{s.batch?.name}</td>
-              <td className="p-2">{s.branch?.name}</td>
-              <td className="p-2">{s.email}</td>
-              <td className="p-2 font-semibold">{s.totalPoints || 0}</td>
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Reg No</th>
+              <th>Batch</th>
+              <th>Branch</th>
+              <th>Email</th>
+              <th>Total Points</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filtered.map((s, i) => (
+              <tr key={i}>
+                <td>{s.name}</td>
+                <td>{s.registerNumber}</td>
+                <td>{s.batch?.name}</td>
+                <td>{s.branch?.name}</td>
+                <td>{s.email}</td>
+                <td className="points">{s.totalPoints || 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
