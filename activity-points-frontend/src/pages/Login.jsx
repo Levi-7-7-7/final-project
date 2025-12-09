@@ -4,6 +4,8 @@ import { Eye, EyeOff, GraduationCap, User, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance';
 import '../css/Login.css';
+import { BASE_URL } from '../utils/constants';
+
 
 export default function Login() {
   const [role, setRole] = useState('student');
@@ -17,28 +19,39 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  // Request OTP for first-time students
-  const handleRequestOTP = async () => {
-    setError('');
-    setSuccess('');
-    if (!identifier.trim()) {
-      setError('Register number is required');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await axios.post('/auth/start-login', { registerNumber: identifier });
-      setSuccess(res.data.message || 'OTP sent');
-      setTimeout(() => {
-        navigate(`/verify-otp?registerNumber=${encodeURIComponent(identifier)}`);
-      }, 1000);
-    } catch (err) {
-      console.error('OTP request error:', err.response ?? err);
-      setError(err.response?.data?.error || 'Failed to send OTP.');
-    } finally {
-      setLoading(false);
-    }
-  };
+
+// Request OTP for first-time students
+const handleRequestOTP = async () => {
+  setError('');
+  setSuccess('');
+
+  if (!identifier.trim()) {
+    setError('Register number is required');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await axios.post(
+      `${BASE_URL}/api/auth/start-login`,
+      { registerNumber: identifier }
+    );
+
+    setSuccess(res.data.message || 'OTP sent');
+
+    setTimeout(() => {
+      navigate(`/verify-otp?registerNumber=${encodeURIComponent(identifier)}`);
+    }, 1000);
+
+  } catch (err) {
+    console.error('OTP request error:', err.response ?? err);
+    setError(err.response?.data?.error || 'Failed to send OTP.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Login for both students and tutors
   const handleLogin = async () => {
