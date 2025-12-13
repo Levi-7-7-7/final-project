@@ -87,3 +87,26 @@
   font-weight: 600;
   padding: 24px;
 }
+/* Add this to your CSS file for the spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  margin-right: 8px; /* Optional: adds space between the icon and the text */
+  vertical-align: middle;
+}
+
+/* You might want to ensure the buttons are wide enough to hold the text and spinner */
+.btn-approve, .btn-reject {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px; /* Adjust as needed */
+}
