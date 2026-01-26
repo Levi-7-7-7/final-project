@@ -1,281 +1,141 @@
-.student-dashboard {
+/* Container */
+.certificate-upload-container {
+  min-height: 100vh;
+  padding-bottom: 80px; /* space for BottomNav */
   max-width: 720px;
-  margin: 2rem auto;
-  font-family: 'Inter', sans-serif;
-  color: #334155; /* slate-700 */
-  padding: 0 1rem;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #334155;
+  background: linear-gradient(135deg, #f8fafc, #dbeafe, #d1fae5);
 }
 
-.dashboard-header {
-  background: linear-gradient(135deg, #f0f9ff, #dbeafe);
+/* Header */
+.certificate-upload-container header {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+}
+
+.certificate-upload-container .back-button {
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(255 255 255 / 0.8);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+}
+.certificate-upload-container .back-button:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.certificate-upload-container .title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-left: 16px;
+  color: #1e293b;
+}
+
+/* Main content */
+.certificate-upload-container main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 24px;
+}
+
+/* Select dropdowns */
+.certificate-upload-container .upload-select {
+  padding: 8px 12px;
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 10px 20px rgb(219 234 254 / 0.5);
-  margin-bottom: 2rem;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  background: white;
+  color: #1e293b;
 }
 
-.header-top {
+/* Eligible points */
+.certificate-upload-container .eligible-points {
+  margin-top: 16px;
+  padding: 16px;
+  background: #ecfeff;
+  border-radius: 12px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.avatar-group {
+.certificate-upload-container .eligible-points strong {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 8px;
+  font-weight: 600;
+  color: #0c4a6e;
 }
 
-.avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: #3b82f6; /* blue-500 */
+.certificate-upload-container .eligible-points p {
+  font-size: 0.875rem;
+  color: #334155;
+  margin: 0;
+}
+
+/* Custom file input */
+.certificate-upload-container .upload-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.certificate-upload-container .upload-input {
+  display: none;
+}
+
+.certificate-upload-container .upload-input-btn {
+  padding: 12px 16px;
+  background-color: #3b82f6;
   color: white;
-  font-weight: 700;
-  font-size: 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.certificate-upload-container .upload-input-btn:hover {
+  background-color: #2563eb;
+}
+
+/* Submit button */
+.certificate-upload-container .upload-btn {
+  padding: 12px 16px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 600;
+}
+
+.certificate-upload-container .upload-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.certificate-upload-container .upload-btn:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+/* Success screen */
+.certificate-upload-container .success-screen {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  user-select: none;
-  overflow: hidden;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatar-fallback {
-  color: white;
-}
-
-.greeting h1 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-}
-
-.greeting p {
-  margin: 0;
-  color: #64748b; /* slate-500 */
-}
-
-/* New container for notification and logout buttons */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.notification-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #334155;
-  transition: color 0.2s ease-in-out;
-}
-
-.notification-btn:hover {
-  color: #3b82f6;
-}
-
-/* Logout button style in header */
-.logout-btn-header {
-  background-color: #ef4444;
-  border: none;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.25s ease-in-out;
-  user-select: none;
-}
-
-.logout-btn-header:hover {
-  background-color: #b91c1c;
-}
-
-.points-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem 2rem;
-  box-shadow: 0 5px 15px rgb(219 234 254 / 0.4);
-}
-
-.points-info p {
-  margin: 0;
-  font-weight: 600;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.points-info h2 {
-  margin: 0.25rem 0 0.5rem 0;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1e293b; /* slate-800 */
-}
-
-.points-growth {
-  font-weight: 600;
-  color: #22c55e; /* green-500 */
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.875rem;
-}
-
-.award-icon {
-  font-size: 2.5rem;
-}
-
-.dashboard-main h3 {
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 1rem;
-}
-
-.recent-activities-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 2rem 0 1rem 0;
-}
-
-.recent-activities-header h3 {
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
-}
-
-.recent-activities-header button {
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.9rem;
-  border-radius: 6px;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.recent-activities-header button:hover {
-  background-color: #dbeafe;
-}
-
-.activities-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgb(219 234 254 / 0.4);
-  padding: 1rem;
-}
-
-.no-activities {
-  color: #94a3b8; /* slate-400 */
-  text-align: center;
-}
-
-.activity-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.75rem 0;
-  align-items: center;
-}
-
-.activity-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.activity-icon-wrapper {
-  font-size: 1.5rem;
-  color: #fbbf24; /* amber-400 */
-}
-
-.activity-details h4 {
-  margin: 0 0 0.2rem 0;
-  font-weight: 600;
-  color: #334155;
-}
-
-.activity-details p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #64748b;
-}
-
-.activity-right {
-  text-align: right;
-}
-
-.activity-points {
-  font-weight: 700;
-  color: #334155;
-  margin: 0 0 0.25rem 0;
-}
-
-.status-badge {
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  user-select: none;
-}
-
-.status-approved {
-  background-color: #dcfce7;
-  color: #22c55e;
-}
-
-.status-pending {
-  background-color: #fed7aa;
-  color: #ea580c;
-}
-
-/* Removed old logout-wrapper styles since logout moved to header */
-
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-around;
-  padding: 0.5rem 0;
-  box-shadow: 0 -1px 5px rgb(0 0 0 / 0.05);
-  z-index: 100;
-}
-
-.nav-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #64748b;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.75rem;
-  transition: color 0.2s ease;
-}
-
-.nav-button span {
-  margin-top: 4px;
-}
-
-.nav-button.active {
-  color: #2563eb;
-  font-weight: 700;
 }

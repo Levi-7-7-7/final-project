@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ ADDED
 import tutorAxios from '../api/tutorAxios';
 import { Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import '../css/StudentList.css'; // import CSS
+import '../css/StudentList.css';
 
 const StudentList = () => {
-  const [students, setStudents] = useState([]);
+  const navigate = useNavigate(); // ✅ ADDED
 
+  const [students, setStudents] = useState([]);
   const [batchFilter, setBatchFilter] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
   const [search, setSearch] = useState('');
@@ -89,16 +91,24 @@ const StudentList = () => {
 
         <select className="select-box" onChange={(e) => setBatchFilter(e.target.value)}>
           <option value="">All Batches</option>
-          {batchOptions.map((b, i) => <option key={i} value={b}>{b}</option>)}
+          {batchOptions.map((b, i) => (
+            <option key={i} value={b}>{b}</option>
+          ))}
         </select>
 
         <select className="select-box" onChange={(e) => setBranchFilter(e.target.value)}>
           <option value="">All Branches</option>
-          {branchOptions.map((b, i) => <option key={i} value={b}>{b}</option>)}
+          {branchOptions.map((b, i) => (
+            <option key={i} value={b}>{b}</option>
+          ))}
         </select>
 
-        <button className="btn" onClick={downloadExcel}><Download size={18} /> Excel</button>
-        <button className="btn" onClick={downloadPDF}><Download size={18} /> PDF</button>
+        <button className="btn" onClick={downloadExcel}>
+          <Download size={18} /> Excel
+        </button>
+        <button className="btn" onClick={downloadPDF}>
+          <Download size={18} /> PDF
+        </button>
       </div>
 
       {/* Table */}
@@ -112,6 +122,7 @@ const StudentList = () => {
               <th>Branch</th>
               <th>Email</th>
               <th>Total Points</th>
+              <th>Action</th> {/* ✅ ADDED */}
             </tr>
           </thead>
           <tbody>
@@ -123,6 +134,15 @@ const StudentList = () => {
                 <td>{s.branch?.name}</td>
                 <td>{s.email}</td>
                 <td className="points">{s.totalPoints || 0}</td>
+                <td>
+                  {/* ✅ MOVED HERE (inside component) */}
+                  <button
+                    onClick={() => navigate(`/tutor/dashboard/students/${s._id}`)}
+                    className="px-3 py-1 bg-blue-500 text-white rounded"
+                  >
+                    View
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

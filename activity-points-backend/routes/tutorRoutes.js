@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const fs = require('fs');
 const csv = require('csv-parser');
+const tutorAuth = require('../middleware/tutorAuth');
 
 const Tutor = require('../models/Tutor');
 const Student = require('../models/Student');
@@ -14,23 +15,23 @@ const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
 
-// ==================
-// Tutor Auth Middleware
-// ==================
-function tutorAuth(req, res, next) {
-  const header = req.headers.authorization;
-  if (!header) return res.status(401).json({ error: 'No token provided' });
+// // ==================
+// // Tutor Auth Middleware
+// // ==================
+// function tutorAuth(req, res, next) {
+//   const header = req.headers.authorization;
+//   if (!header) return res.status(401).json({ error: 'No token provided' });
 
-  const token = header.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'tutor') return res.status(403).json({ error: 'Not authorized as tutor' });
-    req.tutor = decoded;
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'Invalid or expired token' });
-  }
-}
+//   const token = header.split(' ')[1];
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     if (decoded.role !== 'tutor') return res.status(403).json({ error: 'Not authorized as tutor' });
+//     req.tutor = decoded;
+//     next();
+//   } catch (err) {
+//     res.status(401).json({ error: 'Invalid or expired token' });
+//   }
+// }
 
 
 // ==================
@@ -85,19 +86,92 @@ router.post('/login', async (req, res) => {
 
 
 // ==================
-// Get Pending Certificates
+// Get Pending Certificates (with potential points)
 // ==================
 router.get('/certificates/pending', tutorAuth, async (req, res) => {
   try {
     const pendingCerts = await Certificate.find({ status: 'pending' })
       .populate('student', 'name registerNumber email batch branch')
-      .populate('category', 'name');
+      .populate('category'); // full category needed for points logic
 
-    res.json(pendingCerts);
+    const formattedCerts = pendingCerts.map(cert => {
+      let potentialPoints = 0;
+
+      const category = cert.category;
+      if (category) {
+        // find matching subcategory
+        const sub = category.subcategories.find(
+          sc => sc.name.toLowerCase() === cert.subcategory.toLowerCase()
+        );
+
+        if (sub) {
+          // 🔹 Case 1: Fixed-point activities (Online Course, IV, etc.)
+          if (sub.fixedPoints !== null) {
+            potentialPoints = sub.fixedPoints;
+          }
+
+          // 🔹 Case 2: Level + Prize based activities
+          else if (sub.levels.length && cert.level && cert.prizeType) {
+            const levelObj = sub.levels.find(
+              l => l.name.toLowerCase() === cert.level.toLowerCase()
+            );
+
+            if (levelObj) {
+              const prizeObj = levelObj.prizes.find(
+                p => p.type === cert.prizeType
+              );
+
+              if (prizeObj) {
+                potentialPoints = prizeObj.points;
+              }
+            }
+          }
+
+          // 🔹 Apply subcategory maxPoints cap if exists
+          if (sub.maxPoints !== null) {
+            potentialPoints = Math.min(potentialPoints, sub.maxPoints);
+          }
+        }
+      }
+
+      return {
+        ...cert.toObject(),
+        potentialPoints
+      };
+    });
+
+    res.json(formattedCerts);
+  } catch (err) {
+    console.error('Error fetching pending certificates:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+// ==================
+// Get ALL Certificates (Tutor)
+// ==================
+router.get('/certificates', tutorAuth, async (req, res) => {
+  try {
+    const certs = await Certificate.find()
+      .populate('student', 'name registerNumber email batch branch totalPoints')
+      .populate({
+        path: 'category',
+        select: 'name subcategories', // include subcategories for potential front-end logic
+      });
+
+    res.json({
+      success: true,
+      certificates: certs
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 
 // ==================
@@ -151,33 +225,74 @@ router.post('/students/upload', tutorAuth, upload.single('file'), async (req, re
 });
 
 
-// ==================
-// Approve Certificate (UPDATED + FIXED)
-// ==================
-
 router.post("/certificates/:id/approve", tutorAuth, async (req, res) => {
   try {
-    const certId = req.params.id;
-
-    const cert = await Certificate.findById(certId);
+    const cert = await Certificate.findById(req.params.id);
     if (!cert) return res.status(404).json({ message: "Certificate not found" });
 
     const category = await Category.findById(cert.category);
     if (!category) return res.status(404).json({ message: "Category not found" });
 
-    let sub = category.subcategories.find(s => s.name.toLowerCase() === cert.subcategory.toLowerCase());
+    const sub = category.subcategories.find(
+      s => s.name.toLowerCase() === cert.subcategory.toLowerCase()
+    );
     if (!sub) return res.status(404).json({ message: "Subcategory not found" });
 
-    const pointsToAdd = Number(sub.points || 0);
+    let pointsToAdd = 0;
 
+    // =============================
+    // CASE 1: Fixed point activity
+    // =============================
+    if (sub.fixedPoints !== null) {
+      pointsToAdd = sub.fixedPoints;
+    }
+
+    // ==========================================
+    // CASE 2: Level + Prize based activity
+    // ==========================================
+    else {
+      const level = sub.levels.find(
+        l => l.name.toLowerCase() === (cert.level || "").toLowerCase()
+      );
+      if (!level) {
+        return res.status(400).json({ message: "Invalid level selected" });
+      }
+
+      const prize = level.prizes.find(
+        p => p.type === cert.prizeType
+      );
+      if (!prize) {
+        return res.status(400).json({ message: "Invalid prize type selected" });
+      }
+
+      pointsToAdd = prize.points;
+    }
+
+    // =============================
+    // Apply subcategory cap
+    // =============================
+    if (sub.maxPoints !== null) {
+      pointsToAdd = Math.min(pointsToAdd, sub.maxPoints);
+    }
+
+    // =============================
+    // Apply category cap
+    // =============================
+    if (category.maxPoints !== null) {
+      pointsToAdd = Math.min(pointsToAdd, category.maxPoints);
+    }
+
+    // =============================
     // Update certificate
+    // =============================
     cert.status = "approved";
     cert.pointsAwarded = pointsToAdd;
-    cert.approvedAt = new Date();
     await cert.save();
 
+    // =============================
     // Update student total points
-    const updatedStudent = await Student.findByIdAndUpdate(
+    // =============================
+    const student = await Student.findByIdAndUpdate(
       cert.student,
       { $inc: { totalPoints: pointsToAdd } },
       { new: true }
@@ -186,7 +301,7 @@ router.post("/certificates/:id/approve", tutorAuth, async (req, res) => {
     res.json({
       message: "Certificate approved successfully",
       pointsAdded: pointsToAdd,
-      studentTotalPoints: updatedStudent?.totalPoints || 0,
+      studentTotalPoints: student.totalPoints,
       certificateId: cert._id
     });
 

@@ -7,8 +7,6 @@ import {
   Award,
   Eye,
   Download,
-  User,
-  Upload,
   CheckCircle,
   Clock,
   XCircle
@@ -77,18 +75,15 @@ export default function ViewCertificatesScreen() {
     fetchCategories();
   }, []);
 
-  // Helpers
-  const getCategoryNameById = (id) => {
-    const cat = categories.find(c => c._id === id);
-    return cat ? cat.name : 'Unknown';
-  };
-
-  const getCategoryColorClassById = (id) => {
-    const cat = categories.find(c => c._id === id);
-    return cat?.colorClass || 'category-default';
-  };
+  // ===============================
+  // HELPERS
+  // ===============================
+  const getCategoryById = (id) => categories.find(c => c._id === id);
+  const getCategoryNameById = (id) => getCategoryById(id)?.name || 'Unknown';
+  const getCategoryColorClassById = (id) => getCategoryById(id)?.colorClass || 'category-default';
 
   const getStatusColorClass = (status) => {
+    if (!status) return 'status-default';
     switch (status.toLowerCase()) {
       case 'approved': return 'status-approved';
       case 'pending': return 'status-pending';
@@ -98,6 +93,7 @@ export default function ViewCertificatesScreen() {
   };
 
   const getStatusIcon = (status) => {
+    if (!status) return null;
     switch (status.toLowerCase()) {
       case 'approved': return <CheckCircle className="icon status-approved-icon" />;
       case 'pending': return <Clock className="icon status-pending-icon" />;
@@ -109,13 +105,52 @@ export default function ViewCertificatesScreen() {
   const filteredCertificates =
     activeFilter === 'all'
       ? certificates
-      : certificates.filter(c => c.status.toLowerCase() === activeFilter);
+      : certificates.filter(c => (c.status || '').toLowerCase() === activeFilter);
+
+  // ===============================
+  // POINT CALCULATION
+  // ===============================
+  const calculatePoints = (cert) => {
+    if (!cert || !cert.category || !categories.length) return 0;
+
+    const cat = getCategoryById(cert.category._id || cert.category);
+    if (!cat) return 0;
+
+    const sub = cat.subcategories.find(s => s.name === cert.subcategory);
+    if (!sub) return 0;
+
+    // Fixed points (simple case)
+    if (sub.fixedPoints !== null && sub.fixedPoints !== undefined) return sub.fixedPoints;
+
+    // Level + prizeType based (hackathon, paper presentation, etc.)
+    if (sub.levels?.length) {
+      const levelObj = sub.levels.find(l => l.name === cert.level);
+      if (!levelObj) return 0;
+      const prizeObj = levelObj.prizes.find(p => p.type === cert.prizeType);
+      if (!prizeObj) return 0;
+      return prizeObj.points;
+    }
+
+    return 0;
+  };
+
+  const displayPoints = (cert) => {
+    if (!cert) return 0;
+    // Approved: show awarded points or calculate if missing
+    if (cert.status?.toLowerCase() === 'approved') return cert.pointsAwarded ?? calculatePoints(cert);
+    // Pending: show potential points or calculate from category
+    if (cert.status?.toLowerCase() === 'pending') return cert.potentialPoints ?? calculatePoints(cert);
+    return 0;
+  };
 
   const totalPoints = certificates
-    .filter(c => c.status.toLowerCase() === 'approved')
-    .reduce((sum, c) => sum + (c.pointsAwarded || c.points || 0), 0);
+    .filter(c => (c.status || '').toLowerCase() === 'approved')
+    .reduce((sum, c) => sum + displayPoints(c), 0);
 
-  const handleView = (url) => window.open(url, "_blank");
+  const handleView = (url) => {
+    if (!url) return;
+    window.open(url, "_blank");
+  };
 
   return (
     <div className="viewcertificates-container">
@@ -154,7 +189,7 @@ export default function ViewCertificatesScreen() {
             {filter.charAt(0).toUpperCase() + filter.slice(1)}
             {filter !== 'all' && (
               <span className="filter-count">
-                ({certificates.filter(c => c.status.toLowerCase() === filter).length})
+                ({certificates.filter(c => (c.status || '').toLowerCase() === filter).length})
               </span>
             )}
           </button>
@@ -195,66 +230,67 @@ export default function ViewCertificatesScreen() {
             </div>
 
             <div className="cert-category-subcat">
-              <span className={`category-badge ${getCategoryColorClassById(cert.category)}`}>
-                {getCategoryNameById(cert.category)}
+              <span className={`category-badge ${getCategoryColorClassById(cert.category?._id || cert.category)}`}>
+                {getCategoryNameById(cert.category?._id || cert.category)}
               </span>
               <span className="separator">•</span>
-              <span className="subcategory">{cert.subcategory}</span>
+              <span className="subcategory">{cert.subcategory || '—'}</span>
             </div>
 
-            {cert.prizeLevel && (
+            {(cert.level || cert.prizeType) && (
               <div className="prize-level">
                 <Award size={16} className="award-icon" />
-                <span>{cert.prizeLevel}</span>
+                <span>
+                  {cert.level ? cert.level : ''}
+                  {cert.level && cert.prizeType ? ' - ' : ''}
+                  {cert.prizeType ?? ''}
+                </span>
               </div>
             )}
 
             <span className={`status-badge ${getStatusColorClass(cert.status)}`}>
-              {cert.status}
+              {cert.status ?? 'Unknown'}
             </span>
 
             <div className="cert-footer">
               <div className="dates-points">
                 <div>
                   <Calendar size={16} />
-                  <span>Submitted: {new Date(cert.createdAt).toLocaleDateString()}</span>
+                  <span>
+                    Submitted: {cert.createdAt ? new Date(cert.createdAt).toLocaleDateString() : 'Unknown'}
+                  </span>
                 </div>
 
-                {/* DYNAMIC POINTS DISPLAY */}
                 <div>
                   <Award size={16} className="award-green" />
-
                   <span className="points-text">
-                    +{
-                      cert.status.toLowerCase() === "approved"
-                        ? (cert.pointsAwarded ?? 0)
-                        : cert.status.toLowerCase() === "pending"
-                        ? (cert.potentialPoints ?? 0)
-                        : 0
-                    } pts
+                    +{displayPoints(cert)} pts
                   </span>
-
                 </div>
               </div>
 
               <div className="actions">
-                <button onClick={() => handleView(cert.fileUrl)} className="btn-view">
-                  <Eye size={16} /> View
-                </button>
+                {cert.fileUrl && (
+                  <>
+                    <button onClick={() => handleView(cert.fileUrl)} className="btn-view">
+                      <Eye size={16} /> View
+                    </button>
 
-                <a
-                  href={cert.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="btn-download"
-                >
-                  <Download size={16} /> Download
-                </a>
+                    <a
+                      href={cert.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download
+                      className="btn-download"
+                    >
+                      <Download size={16} /> Download
+                    </a>
+                  </>
+                )}
               </div>
             </div>
 
-            {cert.status.toLowerCase() === "rejected" && (
+            {cert.status?.toLowerCase() === "rejected" && (
               <div className="rejected-reason">
                 <strong>Reason:</strong> {cert.rejectionReason || "Certificate rejected"}
               </div>

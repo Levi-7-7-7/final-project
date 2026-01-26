@@ -72,3 +72,39 @@
   font-size: 14px;
   color: #2563eb;
 }
+.csv-instructions {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.csv-instructions h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: #1e293b;
+}
+
+.csv-instructions ul {
+  padding-left: 18px;
+  margin: 8px 0;
+}
+
+.csv-instructions li {
+  margin-bottom: 4px;
+}
+
+.csv-example {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 13px;
+  margin: 10px 0;
+  white-space: pre-wrap;   /* 🔑 keeps line breaks */
+  overflow-x: auto;
+}

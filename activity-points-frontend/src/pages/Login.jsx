@@ -90,7 +90,7 @@ const handleRequestOTP = async () => {
         localStorage.setItem('tutorName', res.data.tutor?.name || 'Tutor');
 
         setSuccess(res.data.message || 'Tutor login successful');
-        navigate('/tutor/dashboard');
+        navigate('/tutor/dashboard/students');
       }
     } catch (err) {
       console.error('Login error:', err.response ?? err);

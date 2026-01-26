@@ -200,6 +200,6 @@ body, html {
 }
 
 .spinner {
-  animation: spin 1s linear infinite;
+  animation: spin 3s linear infinite;
   margin-right: 8px; /* Space between spinner and text */
 }

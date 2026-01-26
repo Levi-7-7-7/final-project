@@ -9,8 +9,12 @@ const imagekit = new ImageKit({
   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
 });
 
+// ✅ Memory storage so req.file.buffer is available
+const storage = multer.memoryStorage();
+
 const upload = multer({
-  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB limit
+  storage,
+  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB
   fileFilter: (req, file, cb) => {
     if (
       file.mimetype.startsWith('image/') ||
@@ -23,69 +27,105 @@ const upload = multer({
   },
 }).single('file');
 
-// Upload certificate handler
+// ===============================
+// Upload Certificate
+// ===============================
 exports.uploadCertificate = (req, res) => {
   upload(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({ message: err.message });
-    }
+    if (err) return res.status(400).json({ message: err.message });
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
+    const {
+      categoryId,
+      subcategoryName,
+      level,        // 👈 NEW
+      prizeType     // 👈 NEW (Participation / First / Second / Third)
+    } = req.body;
 
-    const { categoryId, subcategoryName, prizeLevel } = req.body;
-    const studentId = req.user.id;
+    const studentId = req.user?.id;
+    if (!studentId) return res.status(401).json({ message: 'Unauthorized' });
 
     try {
-      // Validate category
-      const categoryDoc = await Category.findById(categoryId);
-      if (!categoryDoc) {
+      const category = await Category.findById(categoryId);
+      if (!category) {
         return res.status(400).json({ message: 'Invalid category' });
       }
 
-      // Validate subcategory
-      const subcategoryObj = categoryDoc.subcategories.find(
-        (sub) => sub.name === subcategoryName
+      const subcategory = category.subcategories.find(
+        (s) => s.name === subcategoryName
       );
 
-      if (!subcategoryObj) {
+      if (!subcategory) {
         return res.status(400).json({ message: 'Invalid subcategory' });
       }
 
-      // ⭐ AUTO CALCULATE POINTS
-      let potentialPoints = subcategoryObj.points;
+      // ===============================
+      // 🎯 POINT CALCULATION
+      // ===============================
+      let potentialPoints = 0;
 
-      // If prizeLevel influences points, add that logic here:
-      // Example:
-      // if (subcategoryObj.level === prizeLevel) { potentialPoints = subcategoryObj.points }
+      // CASE 1: Fixed-point subcategory
+      if (subcategory.fixedPoints !== undefined) {
+        potentialPoints = subcategory.fixedPoints;
+      }
 
-      // Upload to ImageKit
+      // CASE 2: Level + Prize based subcategory
+      else if (subcategory.levels?.length) {
+        if (!level || !prizeType) {
+          return res.status(400).json({
+            message: 'Level and prize type are required for this activity'
+          });
+        }
+
+        const levelObj = subcategory.levels.find(l => l.name === level);
+        if (!levelObj) {
+          return res.status(400).json({ message: 'Invalid level selected' });
+        }
+
+        const prizeObj = levelObj.prizes.find(p => p.type === prizeType);
+        if (!prizeObj) {
+          return res.status(400).json({ message: 'Invalid prize type selected' });
+        }
+
+        potentialPoints = prizeObj.points;
+      }
+
+      else {
+        return res.status(400).json({
+          message: 'Unable to calculate points for selected activity'
+        });
+      }
+
+      // ===============================
+      // 📤 Upload to ImageKit
+      // ===============================
       const uploadResult = await imagekit.upload({
         file: req.file.buffer.toString('base64'),
         fileName: req.file.originalname,
         folder: '/certificates',
+        useUniqueFileName: true, // optional but recommended
       });
 
-      // Create and save certificate
-      const cert = new Certificate({
+      // ===============================
+      // 🧾 Save Certificate
+      // ===============================
+      const certificate = new Certificate({
         student: studentId,
         category: categoryId,
         subcategory: subcategoryName,
-        prizeLevel,
+        level: level || null,
+        prizeType: prizeType || null,
         fileUrl: uploadResult.url,
         fileId: uploadResult.fileId,
-
-        // ⭐ NEW FIELD
         potentialPoints,
-        status: "pending",
+        status: 'pending',
       });
 
-      await cert.save();
+      await certificate.save();
 
-      res.json({
+      res.status(201).json({
         message: 'Certificate uploaded successfully',
-        certificate: cert,
+        certificate,
       });
 
     } catch (error) {
@@ -95,14 +135,22 @@ exports.uploadCertificate = (req, res) => {
   });
 };
 
-// Get student’s certificates
+// ===============================
+// Get Logged-in Student Certificates
+// ===============================
 exports.getMyCertificates = async (req, res) => {
   try {
-    const studentId = req.user.id;
-    const certificates = await Certificate.find({ student: studentId });
-    res.json({ certificates });
+    const studentId = req.user?.id;
+    if (!studentId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const certificates = await Certificate.find({ student: studentId })
+      .populate('category', 'name')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({ certificates });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error fetching certificates' });
+    console.error('Failed to fetch certificates:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
