@@ -78,9 +78,22 @@ export default function ViewCertificatesScreen() {
   // ===============================
   // HELPERS
   // ===============================
-  const getCategoryById = (id) => categories.find(c => c._id === id);
-  const getCategoryNameById = (id) => getCategoryById(id)?.name || 'Unknown';
-  const getCategoryColorClassById = (id) => getCategoryById(id)?.colorClass || 'category-default';
+// Updated helper to handle empty category state
+const getCategoryById = (id) => {
+  if (!id || !categories || categories.length === 0) return null;
+  const searchId = id._id ? id._id : id;
+  return categories.find(c => c._id === searchId) || null;
+};
+
+const getCategoryNameById = (id) => {
+  const cat = getCategoryById(id);
+  return cat ? cat.name : "Loading Category..."; // Prevents crash if category not found yet
+};
+
+const getCategoryColorClassById = (id) => {
+  const cat = getCategoryById(id);
+  return cat ? cat.colorClass : "category-default";
+};
 
   const getStatusColorClass = (status) => {
     if (!status) return 'status-default';
@@ -113,16 +126,16 @@ export default function ViewCertificatesScreen() {
   const calculatePoints = (cert) => {
     if (!cert || !cert.category || !categories.length) return 0;
 
-    const cat = getCategoryById(cert.category._id || cert.category);
+    const cat = getCategoryById(cert.category);
     if (!cat) return 0;
 
     const sub = cat.subcategories.find(s => s.name === cert.subcategory);
     if (!sub) return 0;
 
-    // Fixed points (simple case)
+    // Fixed points
     if (sub.fixedPoints !== null && sub.fixedPoints !== undefined) return sub.fixedPoints;
 
-    // Level + prizeType based (hackathon, paper presentation, etc.)
+    // Level + prizeType based
     if (sub.levels?.length) {
       const levelObj = sub.levels.find(l => l.name === cert.level);
       if (!levelObj) return 0;
@@ -136,16 +149,53 @@ export default function ViewCertificatesScreen() {
 
   const displayPoints = (cert) => {
     if (!cert) return 0;
-    // Approved: show awarded points or calculate if missing
     if (cert.status?.toLowerCase() === 'approved') return cert.pointsAwarded ?? calculatePoints(cert);
-    // Pending: show potential points or calculate from category
     if (cert.status?.toLowerCase() === 'pending') return cert.potentialPoints ?? calculatePoints(cert);
     return 0;
   };
 
-  const totalPoints = certificates
-    .filter(c => (c.status || '').toLowerCase() === 'approved')
-    .reduce((sum, c) => sum + displayPoints(c), 0);
+  /**
+   * TOTAL POINTS LOGIC (Rule-based)
+   * 1. Groups certificates by Category.
+   * 2. For Arts/Sports, only the highest prize in a category is taken (no clubbing).
+   * 3. Caps each segment at its maxPoints (default 40 per Rule 6).
+   */
+  const calculateTotalPoints = () => {
+    const approvedCerts = certificates.filter(c => c.status?.toLowerCase() === 'approved');
+    
+    // Group certificates by category ID
+    const grouped = approvedCerts.reduce((acc, cert) => {
+      const catId = cert.category?._id || cert.category;
+      if (!acc[catId]) acc[catId] = [];
+      acc[catId].push(cert);
+      return acc;
+    }, {});
+
+    let total = 0;
+
+    Object.keys(grouped).forEach(catId => {
+      const catData = getCategoryById(catId);
+      const catName = catData?.name || '';
+      const certsInCat = grouped[catId];
+      
+      let catSum = 0;
+
+      // Rule: No clubbing for Arts/Sports
+      if (catName.includes('Arts') || catName.includes('Sports')) {
+        catSum = Math.max(...certsInCat.map(c => displayPoints(c)), 0);
+      } else {
+        catSum = certsInCat.reduce((sum, c) => sum + displayPoints(c), 0);
+      }
+
+      // Rule: Cap segment points (Default 40, or specific cat max like 50 for NCC)
+      const cap = catData?.maxPoints || 40;
+      total += Math.min(catSum, cap);
+    });
+
+    return total;
+  };
+
+  const totalPoints = calculateTotalPoints();
 
   const handleView = (url) => {
     if (!url) return;
@@ -154,7 +204,6 @@ export default function ViewCertificatesScreen() {
 
   return (
     <div className="viewcertificates-container">
-
       {/* Header */}
       <div className="header">
         <button
@@ -171,7 +220,7 @@ export default function ViewCertificatesScreen() {
       <div className="summary-card">
         <div className="points-summary full-width">
           <p className="points">{totalPoints}</p>
-          <p>Total Points</p>
+          <p>Total Points (Capped)</p>
         </div>
         <div className="certificates-count">
           <p>{certificates.length} certificates submitted</p>
@@ -230,8 +279,8 @@ export default function ViewCertificatesScreen() {
             </div>
 
             <div className="cert-category-subcat">
-              <span className={`category-badge ${getCategoryColorClassById(cert.category?._id || cert.category)}`}>
-                {getCategoryNameById(cert.category?._id || cert.category)}
+              <span className={`category-badge ${getCategoryColorClassById(cert.category)}`}>
+                {getCategoryNameById(cert.category)}
               </span>
               <span className="separator">•</span>
               <span className="subcategory">{cert.subcategory || '—'}</span>
@@ -280,7 +329,6 @@ export default function ViewCertificatesScreen() {
                       href={cert.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      download
                       className="btn-download"
                     >
                       <Download size={16} /> Download

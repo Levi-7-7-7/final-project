@@ -1,114 +1,102 @@
-// src/pages/Dashboard.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from '../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
-import { Award, Star, Bell } from 'lucide-react';
+import { Award, Star, Bell, Loader2 } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 import '../css/StudentDashboard.css';
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
+  // Initialize user from localStorage for instant name display
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('userData');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [certificates, setCertificates] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Logout handler
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userName');
-    navigate('/');
-  };
-
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchDashboardData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return navigate('/');
+
       try {
-        const token = localStorage.getItem('token');
-        const savedRole = localStorage.getItem('role');
+        const headers = { Authorization: `Bearer ${token}` };
 
-        if (!token || savedRole !== 'student') {
-          navigate('/');
-          return;
-        }
+        // Fetch everything in parallel
+        const [userRes, certRes, catRes] = await Promise.all([
+          axios.get('/students/me', { headers }),
+          axios.get('/certificates/my', { headers }), // Consider adding ?limit=5 here
+          axios.get('/categories', { headers })
+        ]);
 
-        const res = await axios.get('/students/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setUser(res.data);
-        localStorage.setItem('userName', res.data.name);
+        setUser(userRes.data);
+        setCertificates(certRes.data.certificates || []);
+        setCategories(catRes.data.categories || []);
+        
+        // Cache user data for next time
+        localStorage.setItem('userData', JSON.stringify(userRes.data));
+        localStorage.setItem('userName', userRes.data.name);
       } catch (err) {
-        console.error('Error fetching student profile:', err);
-        navigate('/');
+        console.error('Fetch error:', err);
+        if (err.response?.status === 401) navigate('/');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchDashboardData();
   }, [navigate]);
 
-  if (loading)
-    return (
-      <div className="student-dashboard p-4 text-center">
-        Loading...
-      </div>
-    );
+  const cappedTotal = useMemo(() => {
+    if (!certificates.length || !categories.length) return 0;
+    const approvedCerts = certificates.filter(c => c.status?.toLowerCase() === 'approved');
+    const grouped = approvedCerts.reduce((acc, cert) => {
+      const catId = cert.category?._id || cert.category;
+      if (!acc[catId]) acc[catId] = [];
+      acc[catId].push(cert);
+      return acc;
+    }, {});
 
-  if (!user)
-    return (
-      <div className="student-dashboard p-4 text-center">
-        No student data found.
-      </div>
-    );
+    let grandTotal = 0;
+    Object.keys(grouped).forEach(catId => {
+      const catData = categories.find(c => c._id === catId);
+      if (!catData) return;
+      const certsInCat = grouped[catId];
+      let catSum = 0;
+      const catName = catData.name.toLowerCase();
+      if (catName.includes('arts') || catName.includes('sports')) {
+        catSum = Math.max(...certsInCat.map(c => c.pointsAwarded || 0), 0);
+      } else {
+        catSum = certsInCat.reduce((sum, c) => sum + (c.pointsAwarded || 0), 0);
+      }
+      grandTotal += Math.min(catSum, catData.maxPoints || 40);
+    });
+    return grandTotal;
+  }, [certificates, categories]);
 
   return (
     <div className="student-dashboard">
-      {/* Header */}
       <header className="dashboard-header">
         <div className="header-top">
           <div className="avatar-group">
             <div className="avatar">
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt={`${user.name} avatar`} />
-              ) : (
-                <span className="avatar-fallback">
-                  {user.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .toUpperCase()}
-                </span>
-              )}
+              <span className="avatar-fallback">{user?.name?.charAt(0) || '?'}</span>
             </div>
-
             <div className="greeting">
-              <h1>Hello, {user.name}</h1>
+              <h1>Hello, {user?.name || 'Student'}</h1>
               <p>Welcome back!</p>
             </div>
           </div>
-
-          <div className="header-actions">
-            <button
-              className="notification-btn"
-              title="Notifications"
-              onClick={() => alert('No notifications yet')}
-            >
-              <Bell size={20} color="#64748b" />
-            </button>
-            <button
-              onClick={handleLogout}
-              className="logout-btn-header"
-              title="Logout"
-            >
-              Logout
-            </button>
-          </div>
+          <button onClick={() => { localStorage.clear(); navigate('/'); }} className="logout-btn-header">Logout</button>
         </div>
 
         <div className="points-card">
           <div className="points-info">
-            <p>Total Activity Points</p>
-            <h2>{user.totalPoints?.toLocaleString() || 0}</h2>
+            <p>Capped Activity Points</p>
+            {loading ? <div className="skeleton skeleton-text" /> : <h2>{cappedTotal}</h2>}
           </div>
           <div className="award-icon">
             <Award size={32} color="#ca8a04" />
@@ -116,60 +104,40 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="dashboard-main">
         <section>
-          <div className="recent-activities-header">
-            <h3>Recent Activities</h3>
-            <button onClick={() => navigate('/activities')}>
-              View All
-            </button>
-          </div>
-
+          <h3>Recent Activities</h3>
           <div className="activities-card">
-            {(user.recentActivities || []).length === 0 && (
-              <p className="no-activities">No recent activities</p>
-            )}
-
-            {(user.recentActivities || []).map((activity, i) => (
-              <div
-                key={i}
-                className="activity-row"
-                style={{
-                  borderBottom:
-                    i < user.recentActivities.length - 1
-                      ? '1px solid #e2e8f0'
-                      : 'none',
-                }}
-              >
-                <div className="activity-left">
-                  <div className="activity-icon-wrapper star-icon">
+            {loading ? (
+              // Display 3 skeleton rows while loading
+              [1, 2, 3].map(n => (
+                <div key={n} className="activity-row skeleton-row">
+                  <div className="skeleton skeleton-circle" />
+                  <div className="skeleton skeleton-line" />
+                </div>
+              ))
+            ) : certificates.length === 0 ? (
+              <p className="no-data">No activities found.</p>
+            ) : (
+              certificates.slice(0, 5).map((cert) => (
+                <div key={cert._id} className="activity-row">
+                  <div className="activity-left">
                     <Star size={20} color="#2563eb" />
+                    <div className="activity-details">
+                      <h4>{cert.title || cert.subcategory}</h4>
+                      <p>{new Date(cert.createdAt).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                  <div className="activity-details">
-                    <h4>{activity.title}</h4>
-                    <p>{activity.date}</p>
+                  <div className="activity-right">
+                    <p className="activity-points">+{cert.pointsAwarded || 0} pts</p>
+                    <span className={`status-badge status-${cert.status?.toLowerCase()}`}>{cert.status}</span>
                   </div>
                 </div>
-
-                <div className="activity-right">
-                  <p className="activity-points">+{activity.points} pts</p>
-                  <span
-                    className={`status-badge ${
-                      activity.status === 'Approved'
-                        ? 'status-approved'
-                        : 'status-pending'
-                    }`}
-                  >
-                    {activity.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </section>
       </main>
-
       <BottomNav activeTab="profile" />
     </div>
   );

@@ -175,24 +175,65 @@ router.get('/certificates', tutorAuth, async (req, res) => {
 
 
 // ==================
-// Get All Students
+// Get All Students (With Capped Points)
 // ==================
 router.get('/students', tutorAuth, async (req, res) => {
   try {
     const students = await Student.find()
-      .select('name registerNumber email batch branch totalPoints')
       .populate('batch', 'name')
       .populate('branch', 'name');
 
+    const categories = await Category.find();
+
+    // Calculate capped points for EACH student
+    const studentsWithCappedPoints = await Promise.all(students.map(async (student) => {
+      const approvedCerts = await Certificate.find({ 
+        student: student._id, 
+        status: 'approved' 
+      });
+
+      const grouped = approvedCerts.reduce((acc, cert) => {
+        const catId = cert.category.toString();
+        if (!acc[catId]) acc[catId] = [];
+        acc[catId].push(cert);
+        return acc;
+      }, {});
+
+      let grandTotal = 0;
+      Object.keys(grouped).forEach(catId => {
+        const catData = categories.find(c => c._id.toString() === catId);
+        if (!catData) return;
+
+        const certsInCat = grouped[catId];
+        let catSum = 0;
+        const catName = catData.name.toLowerCase();
+
+        // Apply "No Clubbing" for Arts/Sports
+        if (catName.includes('arts') || catName.includes('sports')) {
+          catSum = Math.max(...certsInCat.map(c => c.pointsAwarded || 0), 0);
+        } else {
+          catSum = certsInCat.reduce((sum, c) => sum + (c.pointsAwarded || 0), 0);
+        }
+
+        // Apply Category Cap (e.g., 40 or 50)
+        const cap = catData.maxPoints || 40;
+        grandTotal += Math.min(catSum, cap);
+      });
+
+      return {
+        ...student.toObject(),
+        totalPoints: grandTotal // Overwrite the raw points with capped points
+      };
+    }));
+
     res.json({
       success: true,
-      students,
+      students: studentsWithCappedPoints,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // ==================
 // Upload Students via CSV

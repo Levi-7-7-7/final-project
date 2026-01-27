@@ -264,8 +264,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.875rem;
-  color: #64748b;
+  gap: 12px;
+  flex-wrap: wrap; /* This allows buttons to drop to a new line if needed */
 }
 
 .dates-points > div {
@@ -285,7 +285,8 @@
 
 .actions {
   display: flex;
-  gap: 12px;
+  gap: 8px; /* Slightly reduced gap for mobile */
+  flex-shrink: 0; /* Prevents buttons from squishing */
 }
 
 .btn-view,
@@ -395,4 +396,54 @@
 .nav-btn.active,
 .nav-btn:hover {
   color: #2563eb;
+}
+/* Styling for the second point value if you add it to JSX */
+.points-summary .points.capped {
+  color: #2563eb; /* Blue for capped */
+  font-size: 2.25rem;
+}
+
+.points-label-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 800;
+  margin-left: 8px;
+}
+/* Specific Mobile Fix */
+@media (max-width: 480px) {
+  .cert-footer {
+    flex-direction: column; /* Stack points above buttons */
+    align-items: flex-start; /* Align everything to the left */
+  }
+
+  .actions {
+    width: 100%; /* Make action container full width */
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+
+  .btn-view, .btn-download {
+    flex: 1; /* Makes buttons equal width on very small screens */
+    justify-content: center;
+    padding: 8px 4px; /* Slimmer padding */
+    font-size: 0.8rem;
+  }
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #cbd5e1;
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: center; /* This centers the container below */
+  z-index: 50;
+  padding: 0; /* Move padding to the inner container */
 }
