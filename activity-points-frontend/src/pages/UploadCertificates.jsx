@@ -26,18 +26,20 @@ export default function CertificateUploadScreen() {
   const CATEGORIES_API = `${API_BASE}/categories`;
   const CERT_UPLOAD_API = `${API_BASE}/certificates/upload`;
 
-  // Fetch categories
+  /* ---------------- Fetch Categories ---------------- */
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
     axios
-      .get(CATEGORIES_API, { headers: { Authorization: `Bearer ${token}` } })
+      .get(CATEGORIES_API, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(res => setCategories(res.data.categories || []))
       .catch(() => alert('Failed to fetch categories'));
   }, []);
 
-  // Update subcategories when category changes
+  /* ---------------- Update Subcategories ---------------- */
   useEffect(() => {
     if (!categoryId) {
       setSubcategories([]);
@@ -56,7 +58,7 @@ export default function CertificateUploadScreen() {
     setEligiblePoints(null);
   }, [categoryId, categories]);
 
-  // Calculate eligible points
+  /* ---------------- Calculate Points ---------------- */
   useEffect(() => {
     if (!categoryId || !subcategoryName) {
       setEligiblePoints(null);
@@ -65,6 +67,7 @@ export default function CertificateUploadScreen() {
 
     const category = categories.find(c => c._id === categoryId);
     const sub = category?.subcategories?.find(s => s.name === subcategoryName);
+
     if (!sub) return setEligiblePoints(null);
 
     if (sub.fixedPoints != null) {
@@ -79,6 +82,7 @@ export default function CertificateUploadScreen() {
     }
   }, [categoryId, subcategoryName, levelSelected, prizeType, categories]);
 
+  /* ---------------- File Upload ---------------- */
   const handleFileUpload = e => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -94,10 +98,9 @@ export default function CertificateUploadScreen() {
     setUploadedFile(file);
   };
 
-  const removeFile = () => setUploadedFile(null);
-
   const canSubmit = categoryId && subcategoryName && uploadedFile && !uploading;
 
+  /* ---------------- Submit ---------------- */
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setUploading(true);
@@ -105,6 +108,7 @@ export default function CertificateUploadScreen() {
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
+
       formData.append('categoryId', categoryId);
       formData.append('subcategoryName', subcategoryName);
       formData.append('level', levelSelected || '');
@@ -128,7 +132,7 @@ export default function CertificateUploadScreen() {
     }
   };
 
-  // SUCCESS SCREEN
+  /* ---------------- Success Screen ---------------- */
   if (submitted) {
     return (
       <div className="certificate-upload-container success-screen">
@@ -137,6 +141,7 @@ export default function CertificateUploadScreen() {
     );
   }
 
+  /* ---------------- UI ---------------- */
   return (
     <div className="certificate-upload-container">
       <header>
@@ -196,7 +201,7 @@ export default function CertificateUploadScreen() {
             </select>
           )}
 
-        {/* Prize Type */}
+        {/* Prize */}
         {subcategoryName &&
           subcategories.find(s => s.name === subcategoryName)?.levels?.length > 0 && (
             <select
@@ -226,9 +231,13 @@ export default function CertificateUploadScreen() {
         {/* File Upload */}
         <div className="upload-input-wrapper">
           <label htmlFor="file-upload" className="upload-input-btn">
-            <Paperclip size={16} style={{ marginRight: 8 }} />
+            <Paperclip size={16} />
             {uploadedFile
-              ? `${uploadedFile.name} (${(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)`
+              ? `${uploadedFile.name} (${(
+                  uploadedFile.size /
+                  1024 /
+                  1024
+                ).toFixed(2)} MB)`
               : `Choose File (Max ${MAX_FILE_SIZE_MB} MB)`}
           </label>
           <input

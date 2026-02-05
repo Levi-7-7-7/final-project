@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import '../css/certificatespage.css';
 import { useNavigate } from 'react-router-dom';
-import BottomNav from '../components/BottomNav';
+// import BottomNav from '../components/BottomNav';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -347,7 +347,7 @@ const getCategoryColorClassById = (id) => {
         ))}
       </div>
 
-      <BottomNav activeTab="certificates" />
+      {/* <BottomNav activeTab="certificates" /> */}
     </div>
   );
 }

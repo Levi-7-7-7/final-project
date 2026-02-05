@@ -20,10 +20,10 @@
 .header-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap; /* allows items to wrap on small screens */
+  align-items: flex-start; /* 👈 important */
+  gap: 1rem;
 }
+
 
 .avatar-group {
   display: flex;
@@ -67,9 +67,9 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem; /* small spacing for mobile wrap */
+  justify-content: flex-end;
 }
+
 
 .notification-btn {
   background: transparent;
@@ -241,33 +241,39 @@
   bottom: 0;
   left: 0;
   right: 0;
+
+  display: flex;
   background: white;
   border-top: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-around;
-  padding: 0.5rem 0;
   box-shadow: 0 -1px 5px rgb(0 0 0 / 0.05);
   z-index: 100;
 }
 
-.nav-button {
+/* 🔑 THIS IS THE KEY */
+.nav-btn {
+  flex: 1; /* 👈 equal width for all buttons */
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #64748b;
+  justify-content: center;
+
   background: none;
   border: none;
-  cursor: pointer;
+  padding: 0.5rem 0;
+  color: #64748b;
+  font-size: 0.7rem;
   font-weight: 600;
-  font-size: 0.75rem;
+  cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.nav-button span {
+.nav-btn span {
   margin-top: 4px;
+  text-align: center;
+  line-height: 1.1;
 }
 
-.nav-button.active {
+.nav-btn.active {
   color: #2563eb;
   font-weight: 700;
 }
@@ -299,17 +305,13 @@
     padding: 1rem;
   }
 
-  .header-top {
+ .header-top {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: stretch;
   }
 
   .header-actions {
-    margin-top: 0.5rem;
-    width: 100%;
-    justify-content: flex-start;
-    gap: 0.5rem;
+    align-self: flex-end; /* 👈 logout moves to right */
   }
 
   .recent-activities-header {

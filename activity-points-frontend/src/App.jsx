@@ -1,6 +1,107 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+// import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// ---------------------- Student Pages ----------------------
+// // ---------------------- Student Pages ----------------------
+// import Login from './pages/Login';
+// import VerifyOtp from './pages/VerifyOtp';
+// import Dashboard from './pages/Dashboard';
+// import UploadCertificates from './pages/UploadCertificates';
+// import CertificatesPage from './pages/CertificatesPage';
+// import ForgotPassword from './pages/ForgotPassword';
+// import ResetPassword from './pages/ResetPassword';
+// import PrivateRoute from './components/PrivateRoute';
+// import StudentLayout from './layouts/StudentLayout';
+
+
+// // ---------------------- Tutor Pages ----------------------
+// //import TutorLogin from './pages/TutorLogin';
+// import TutorDashboard from './pages/TutorDashboard';
+// import TutorPrivateRoute from './components/TutorPrivateRoute';
+
+// // ---------------------- Tutor Dashboard Nested Pages ----------------------
+// import StudentList from './pages/StudentList';
+// import UploadCSV from './pages/UploadCSV';
+// // Placeholder pages (create later)
+// import PendingCertificates from './pages/PendingCertificates';
+// import ApprovedCertificates from './pages/ApprovedCertificates';
+
+// import StudentDetails from './pages/StudentDetails'; // ✅ ADDED
+
+
+// //import AdminPanel from './pages/AdminPanel';
+
+
+// function App() {
+//   return (
+//     <BrowserRouter>
+//       <Routes>
+//         {/* ================= STUDENT ROUTES ================= */}
+//         <Route path="/" element={<Login />} />
+//         <Route path="/verify-otp" element={<VerifyOtp />} />
+//         <Route path="/forgot-password" element={<ForgotPassword />} />
+//         <Route path="/reset-password" element={<ResetPassword />} />
+//         <Route path="/certificates" element={<CertificatesPage />} />
+
+//         <Route
+//           path="/dashboard"
+//           element={
+//             <PrivateRoute>
+//               <Dashboard />
+//             </PrivateRoute>
+//           }
+//         />
+
+//         <Route
+//           path="/upload-certificate"
+//           element={
+//             <PrivateRoute>
+//               <UploadCertificates />
+//             </PrivateRoute>
+//           }
+//         />
+
+
+// {/*<Route path="/admin" element={<AdminPanel />} />*/}
+
+        
+//         {/* ================= TUTOR ROUTES ================= */}
+//         <Route path="/tutor/login" element={<Login />} />
+
+//         {/* Tutor Dashboard (parent) */}
+//         <Route
+//           path="/tutor/dashboard"
+//           element={
+//             <TutorPrivateRoute>
+//               <TutorDashboard />
+//             </TutorPrivateRoute>
+//           }
+//         >
+//           {/* Nested pages rendered inside <Outlet /> in TutorDashboard */}
+//           <Route index element={<h2>Welcome, Tutor!</h2>} />
+//           <Route path="students" element={<StudentList />} />
+//           <Route path="upload" element={<UploadCSV />} />
+//           <Route path="pending" element={<PendingCertificates />} />
+//           <Route path="approved" element={<ApprovedCertificates />} />
+         
+         
+//           <Route path="students/:studentId" element={<StudentDetails />} />
+
+//         </Route>
+//       </Routes>
+//     </BrowserRouter>
+//   );
+
+
+  
+// }
+
+// export default App;
+
+
+
+
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+/* ===================== STUDENT PAGES ===================== */
 import Login from './pages/Login';
 import VerifyOtp from './pages/VerifyOtp';
 import Dashboard from './pages/Dashboard';
@@ -8,63 +109,57 @@ import UploadCertificates from './pages/UploadCertificates';
 import CertificatesPage from './pages/CertificatesPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import PrivateRoute from './components/PrivateRoute';
 
-// ---------------------- Tutor Pages ----------------------
-//import TutorLogin from './pages/TutorLogin';
+import PrivateRoute from './components/PrivateRoute';
+import StudentLayout from './layouts/StudentLayout';
+
+/* ===================== TUTOR PAGES ===================== */
 import TutorDashboard from './pages/TutorDashboard';
 import TutorPrivateRoute from './components/TutorPrivateRoute';
 
-// ---------------------- Tutor Dashboard Nested Pages ----------------------
+/* ===================== TUTOR NESTED PAGES ===================== */
 import StudentList from './pages/StudentList';
 import UploadCSV from './pages/UploadCSV';
-// Placeholder pages (create later)
 import PendingCertificates from './pages/PendingCertificates';
 import ApprovedCertificates from './pages/ApprovedCertificates';
-
-import StudentDetails from './pages/StudentDetails'; // ✅ ADDED
-
-
-//import AdminPanel from './pages/AdminPanel';
-
+import StudentDetails from './pages/StudentDetails';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ================= STUDENT ROUTES ================= */}
+
+        {/* ===================== PUBLIC ROUTES ===================== */}
         <Route path="/" element={<Login />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/certificates" element={<CertificatesPage />} />
 
+        {/* ===================== STUDENT ROUTES (LAYOUT) ===================== */}
         <Route
-          path="/dashboard"
+          path="/student"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <StudentLayout />
             </PrivateRoute>
           }
-        />
+        >
+          {/* Student Dashboard */}
+          <Route index element={<Dashboard />} />
 
-        <Route
-          path="/upload-certificate"
-          element={
-            <PrivateRoute>
-              <UploadCertificates />
-            </PrivateRoute>
-          }
-        />
+          {/* Other student pages */}
+          <Route path="upload-certificate" element={<UploadCertificates />} />
+          <Route path="certificates" element={<CertificatesPage />} />
+        </Route>
 
+        {/* Optional redirect for old URLs */}
+        <Route path="/dashboard" element={<Navigate to="/student" />} />
+        <Route path="/upload-certificate" element={<Navigate to="/student/upload-certificate" />} />
+        <Route path="/certificates" element={<Navigate to="/student/certificates" />} />
 
-{/*<Route path="/admin" element={<AdminPanel />} />*/}
-
-        
-        {/* ================= TUTOR ROUTES ================= */}
+        {/* ===================== TUTOR ROUTES ===================== */}
         <Route path="/tutor/login" element={<Login />} />
 
-        {/* Tutor Dashboard (parent) */}
         <Route
           path="/tutor/dashboard"
           element={
@@ -73,23 +168,17 @@ function App() {
             </TutorPrivateRoute>
           }
         >
-          {/* Nested pages rendered inside <Outlet /> in TutorDashboard */}
           <Route index element={<h2>Welcome, Tutor!</h2>} />
           <Route path="students" element={<StudentList />} />
+          <Route path="students/:studentId" element={<StudentDetails />} />
           <Route path="upload" element={<UploadCSV />} />
           <Route path="pending" element={<PendingCertificates />} />
           <Route path="approved" element={<ApprovedCertificates />} />
-         
-         
-          <Route path="students/:studentId" element={<StudentDetails />} />
-
         </Route>
+
       </Routes>
     </BrowserRouter>
   );
-
-
-  
 }
 
 export default App;
