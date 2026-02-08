@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  /* ================= FETCH DASHBOARD DATA ================= */
   useEffect(() => {
     const fetchDashboardData = async () => {
       const token = localStorage.getItem('token');
@@ -43,6 +44,7 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [navigate]);
 
+  /* ================= ACTIVITY POINT CALCULATION ================= */
   const cappedTotal = useMemo(() => {
     if (!certificates.length || !categories.length) return 0;
 
@@ -77,12 +79,17 @@ export default function Dashboard() {
     return total;
   }, [certificates, categories]);
 
+  /* ================= PASS LOGIC ================= */
+  const PASS_POINTS = user?.isLateralEntry ? 40 : 60;
+  const hasPassed = cappedTotal >= PASS_POINTS;
+
+  /* ================= UI ================= */
   return (
     <>
-      {/* Points Card */}
+      {/* POINTS CARD */}
       <div className="points-card">
         <div className="points-info">
-          <p>Capped Activity Points</p>
+          <p>Activity Points</p>
           {loading ? (
             <div className="skeleton skeleton-text" />
           ) : (
@@ -94,7 +101,23 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Activities */}
+      {/* PASS / ELIGIBLE CARD */}
+      {!loading && hasPassed && (
+        <div className="pass-card">
+          <div className="pass-left">
+            <Award size={28} className="pass-icon" />
+            <div>
+              <h3>Activity Points Completed</h3>
+              <p>You have successfully met the required activity points.</p>
+            </div>
+          </div>
+          <div className="pass-right">
+            <span className="pass-badge">PASSED</span>
+          </div>
+        </div>
+      )}
+
+      {/* RECENT ACTIVITIES */}
       <section>
         <h3>Recent Activities</h3>
 
@@ -122,12 +145,7 @@ export default function Dashboard() {
                 <div className="activity-right">
                   <p className="activity-points">
                     +{cert.pointsAwarded || 0} pts
-                  </p>
-                  <span
-                    className={`status-badge status-${cert.status?.toLowerCase()}`}
-                  >
-                    {cert.status}
-                  </span>
+                  </p>                  
                 </div>
               </div>
             ))

@@ -354,3 +354,63 @@
 @keyframes shine {
   to { background-position-x: -200%; }
 }
+
+
+
+/* ===================== PASS / APPROVED CARD ===================== */
+.pass-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.25);
+}
+
+.pass-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pass-icon {
+  color: #15803d;
+}
+
+.pass-left h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #14532d;
+}
+
+.pass-left p {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #166534;
+}
+
+.pass-badge {
+  background: #16a34a;
+  color: white;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  letter-spacing: 0.05em;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .pass-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .pass-badge {
+    align-self: flex-start;
+  }
+}
