@@ -13,6 +13,7 @@ const rateLimit = require('express-rate-limit');
 
 const connectDB = require('./config/db');
 
+app.set('trust proxy', 1);
 
 
 // Route imports

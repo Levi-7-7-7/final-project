@@ -59,39 +59,39 @@
 // module.exports = sendOTPEmail;
 
 
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
 
-const sendOTPEmail = async (email, otp) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // false for TLS
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // App Password
-      },
-      // tls: {
-      //   rejectUnauthorized: false,
-      // },
-    });
+// const sendOTPEmail = async (email, otp) => {
+//   try {
+//     const transporter = nodemailer.createTransport({
+//       host: 'smtp.gmail.com',
+//       port: 587,
+//       secure: false, // false for TLS
+//       auth: {
+//         user: process.env.EMAIL_USER,
+//         pass: process.env.EMAIL_PASS, // App Password
+//       },
+//       // tls: {
+//       //   rejectUnauthorized: false,
+//       // },
+//     });
 
-    const mailOptions = {
-      from: `"Activity Points System" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Your OTP Code',
-      html: `<p>Your OTP code is: <strong>${otp}</strong>. It expires in 5 minutes.</p>`,
-    };
+//     const mailOptions = {
+//       from: `"Activity Points System" <${process.env.EMAIL_USER}>`,
+//       to: email,
+//       subject: 'Your OTP Code',
+//       html: `<p>Your OTP code is: <strong>${otp}</strong>. It expires in 5 minutes.</p>`,
+//     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('📧 Email sent:', info.messageId);
-  } catch (error) {
-    console.error('❌ Error sending OTP:', error);
-    throw error;
-  }
-};
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log('📧 Email sent:', info.messageId);
+//   } catch (error) {
+//     console.error('❌ Error sending OTP:', error);
+//     throw error;
+//   }
+// };
 
-module.exports = sendOTPEmail;
+// module.exports = sendOTPEmail;
 
 
 
@@ -197,3 +197,39 @@ module.exports = sendOTPEmail;
 // module.exports = sendOTPEmail;
 
 
+const SibApiV3Sdk = require('sib-api-v3-sdk');
+
+const client = SibApiV3Sdk.ApiClient.instance;
+client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+
+const sendOTPEmail = async (email, otp) => {
+  try {
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    const sendSmtpEmail = {
+      sender: {
+        email: process.env.FROM_EMAIL,
+        name: process.env.FROM_NAME || 'Activity Points System',
+      },
+      to: [{ email }],
+      subject: 'Your OTP Code - Activity Points System',
+      htmlContent: `
+        <div style="font-family: Arial; padding: 20px;">
+          <h2>Your OTP Code</h2>
+          <p>Your OTP is:</p>
+          <h1 style="color:#4F46E5">${otp}</h1>
+          <p>This OTP will expire in 5 minutes.</p>
+        </div>
+      `,
+    };
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('📧 OTP email sent via Brevo');
+
+  } catch (error) {
+    console.error('❌ Brevo OTP Error:', error.response?.body || error);
+    throw error;
+  }
+};
+
+module.exports = sendOTPEmail;
