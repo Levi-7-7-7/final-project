@@ -109,29 +109,22 @@ const handleRequestOTP = async () => {
           <p>Management System</p>
         </div>
 
-        {/* Role selector */}
-        <div className="role-selector" style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
-          <label style={{ cursor: 'pointer' }}>
-            <input
-              type="radio"
-              name="role"
-              value="student"
-              checked={role === 'student'}
-              onChange={() => setRole('student')}
-            />
-            <span style={{ marginLeft: 6 }}>Student</span>
-          </label>
-          <label style={{ cursor: 'pointer' }}>
-            <input
-              type="radio"
-              name="role"
-              value="tutor"
-              checked={role === 'tutor'}
-              onChange={() => setRole('tutor')}
-            />
-            <span style={{ marginLeft: 6 }}>Tutor</span>
-          </label>
-        </div>
+            <div className="form-group">
+              <label className="form-label">
+                <User size={16} /> Login As
+              </label>
+
+              <select
+                className="form-select"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                disabled={loading}
+              >
+                <option value="student">Student</option>
+                <option value="tutor">Tutor</option>
+              </select>
+            </div>
+
 
         {error && <p className="error-message">{error}</p>}
         {success && <p className="success-message">{success}</p>}
