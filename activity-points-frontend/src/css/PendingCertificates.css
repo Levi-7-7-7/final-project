@@ -1,66 +1,72 @@
 .pending-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: 18px;
 }
 
 .pending-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  transition: box-shadow 0.2s ease;
-}
-
-.pending-card:hover {
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  gap: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .card-left {
-  flex: 1 1 60%;
-  min-width: 220px;
+  flex: 2;
+}
+
+.card-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* 🔥 SAFE SPACING */
+  justify-content: center;
 }
 
 .student-name {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #1e3a8a;
+  margin-bottom: 10px;
+}
+
+.level-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.points {
+  margin-top: 8px;
 }
 
 .view-link {
   display: inline-block;
-  margin-top: 8px;
-  color: #2563eb;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background-color: #2563eb;
+  color: #fff;
   text-decoration: none;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
 }
 
 .view-link:hover {
-  text-decoration: underline;
+  background-color: #1e4ed8;
 }
 
-.card-right {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex: 1 1 30%;
-  min-width: 150px;
-  justify-content: flex-end;
-}
-
+/* Buttons */
 .btn-approve,
 .btn-reject {
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 14px;
+  border-radius: 10px;
   border: none;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .btn-approve {
@@ -68,45 +74,53 @@
   color: white;
 }
 
-.btn-approve:hover {
-  background-color: #15803d;
-}
-
 .btn-reject {
   background-color: #dc2626;
   color: white;
 }
 
+.btn-approve:hover,
 .btn-reject:hover {
-  background-color: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
+.btn-approve:disabled,
+.btn-reject:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Loading */
 .pending-loading {
   text-align: center;
-  color: #64748b;
-  font-weight: 600;
-  padding: 24px;
+  padding: 30px;
+  font-size: 16px;
 }
-/* Add this to your CSS file for the spinner animation */
+
+.spinner {
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
   to {
     transform: rotate(360deg);
   }
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-  margin-right: 8px; /* Optional: adds space between the icon and the text */
-  vertical-align: middle;
-}
+/* Mobile safety */
+@media (max-width: 768px) {
+  .pending-card {
+    flex-direction: column;
+  }
 
-/* You might want to ensure the buttons are wide enough to hold the text and spinner */
-.btn-approve, .btn-reject {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 100px; /* Adjust as needed */
+  .card-right {
+    flex-direction: column;
+  }
+}
+/* ===== IMPORTANT SCROLL FIX ===== */
+.pending-container {
+  padding-bottom: 120px; /* 🔥 allows scrolling past last button */
 }

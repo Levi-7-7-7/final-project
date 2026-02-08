@@ -25,7 +25,7 @@ const PendingCertificates = () => {
     fetchPendingCertificates();
   }, []);
 
-  // Function to calculate potential points
+  // Calculate points
   const getPotentialPoints = (cert) => {
     if (!cert || !cert.category) return 0;
 
@@ -35,10 +35,8 @@ const PendingCertificates = () => {
     );
     if (!sub) return 0;
 
-    // Simple fixed points
     if (sub.fixedPoints != null) return sub.fixedPoints;
 
-    // Levels + prize
     if (sub.levels && cert.level && cert.prizeType) {
       const lvl = sub.levels.find(l => l.name === cert.level);
       if (!lvl) return 0;
@@ -49,12 +47,18 @@ const PendingCertificates = () => {
     return 0;
   };
 
-  // Approve / Reject handler
+  // Approve / Reject with confirmation
   const handleCertificateAction = async (certId, action) => {
+    const message =
+      action === 'approve'
+        ? 'Are you sure you want to APPROVE this certificate?'
+        : 'Are you sure you want to REJECT this certificate? This cannot be undone.';
+
+    if (!window.confirm(message)) return;
+
     setProcessingCertId(certId);
     try {
       await tutorAxios.post(`/tutors/certificates/${certId}/${action}`);
-      // Refresh list
       await fetchPendingCertificates();
     } catch (err) {
       console.error(`Failed to ${action} certificate:`, err.response ?? err);
@@ -64,15 +68,17 @@ const PendingCertificates = () => {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
       <p className="pending-loading">
         <Loader2 className="spinner" /> Loading pending certificates...
       </p>
     );
+  }
 
-  if (!pendingCertificates.length)
+  if (!pendingCertificates.length) {
     return <p className="pending-loading">No pending certificates</p>;
+  }
 
   return (
     <div className="pending-container">
@@ -84,18 +90,26 @@ const PendingCertificates = () => {
           <div key={cert._id} className="pending-card">
             <div className="card-left">
               <h3 className="student-name">{cert.student?.name || 'N/A'}</h3>
+
               <p><strong>Category:</strong> {cert.category?.name || 'N/A'}</p>
               <p><strong>Subcategory:</strong> {cert.subcategory || 'N/A'}</p>
+
               {(cert.level || cert.prizeType) && (
-                <p>
-                  <Award size={14} />{' '}
-                  {cert.level ? cert.level : ''}
-                  {cert.level && cert.prizeType ? ' - ' : ''}
+                <p className="level-info">
+                  <Award size={14} />
+                  {cert.level ?? ''}{cert.level && cert.prizeType ? ' - ' : ''}
                   {cert.prizeType ?? ''}
                 </p>
               )}
-              <p><strong>Points:</strong> {points} pts</p>
-              <a href={cert.fileUrl} target="_blank" rel="noreferrer" className="view-link">
+
+              <p className="points"><strong>Points:</strong> {points} pts</p>
+
+              <a
+                href={cert.fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="view-link"
+              >
                 View Certificate
               </a>
             </div>
@@ -106,7 +120,13 @@ const PendingCertificates = () => {
                 onClick={() => handleCertificateAction(cert._id, 'approve')}
                 disabled={isProcessing}
               >
-                {isProcessing ? <><Loader2 size={16} className="spinner" /> Processing...</> : 'Approve'}
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="spinner" /> Processing...
+                  </>
+                ) : (
+                  'Approve'
+                )}
               </button>
 
               <button
@@ -114,7 +134,13 @@ const PendingCertificates = () => {
                 onClick={() => handleCertificateAction(cert._id, 'reject')}
                 disabled={isProcessing}
               >
-                {isProcessing ? <><Loader2 size={16} className="spinner" /> Processing...</> : 'Reject'}
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="spinner" /> Processing...
+                  </>
+                ) : (
+                  'Reject'
+                )}
               </button>
             </div>
           </div>
