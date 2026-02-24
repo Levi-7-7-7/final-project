@@ -1,0 +1,106 @@
+.student-list-card {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.student-list-card h2 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.input-box,
+.select-box {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  outline: none;
+  font-size: 14px;
+  min-width: 150px;
+  flex: 1;
+}
+
+.input-box:focus,
+.select-box:focus {
+  border-color: #2563eb;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+  background: #1e40af;
+  transform: translateY(-2px);
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+thead {
+  background: #f3f4f6;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.points {
+  font-weight: 600;
+}
+
+tr:hover {
+  background: #f0f9ff;
+}
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .filters {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  th, td {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .student-list-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
